@@ -1,0 +1,198 @@
+[gd_scene load_steps=11 format=3 uid="uid://nhuadb1qata0"]
+
+[ext_resource type="Script" path="res://Player_Controler/player_testbed.gd" id="1_juvrk"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="2_pqgit"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="3_60tbv"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="4_xnpt8"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="5_pisfr"]
+[ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="6_yis20"]
+[ext_resource type="Texture2D" uid="uid://cds6s8hdyam4q" path="res://icon.svg" id="7_djsxf"]
+[ext_resource type="Resource" uid="uid://b41uf2t1aaky5" path="res://ExpressionGaurds/is_on_floor.tres" id="7_mt1am"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_nee2e"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b7mnd"]
+albedo_texture = ExtResource("7_djsxf")
+
+[node name="Player" type="CharacterBody3D"]
+axis_lock_linear_z = true
+script = ExtResource("1_juvrk")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_nee2e")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="."]
+
+[node name="StateChart" type="Node" parent="."]
+script = ExtResource("2_pqgit")
+
+[node name="Movement" type="Node" parent="StateChart"]
+script = ExtResource("3_60tbv")
+initial_state = NodePath("Grounded")
+
+[node name="Grounded" type="Node" parent="StateChart/Movement"]
+script = ExtResource("4_xnpt8")
+
+[node name="On Air" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../Airborn/coyote")
+event = &"to_airborne"
+
+[node name="On Jump" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../Airborn/Jump")
+event = &"to_jump"
+
+[node name="Airborn" type="Node" parent="StateChart/Movement"]
+script = ExtResource("3_60tbv")
+initial_state = NodePath("coyote")
+
+[node name="Air" type="Node" parent="StateChart/Movement/Airborn"]
+editor_description = "Treated as the final step of Airborne. The only thing should be able to activate is Dodge."
+script = ExtResource("4_xnpt8")
+
+[node name="On Ground" type="Node" parent="StateChart/Movement/Airborn/Air"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../../Grounded")
+event = &"to_ground"
+
+[node name="Jump" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("4_xnpt8")
+
+[node name="On Ground" type="Node" parent="StateChart/Movement/Airborn/Jump"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../../Grounded")
+event = &"to_ground"
+
+[node name="On jump" type="Node" parent="StateChart/Movement/Airborn/Jump"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../Double Jump")
+event = &"to_double_jump"
+
+[node name="Double Jump" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("4_xnpt8")
+
+[node name="On Ground" type="Node" parent="StateChart/Movement/Airborn/Double Jump"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../../Grounded")
+event = &"to_ground"
+
+[node name="On Air" type="Node" parent="StateChart/Movement/Airborn/Double Jump"]
+editor_description = "This should be treated as the final 'Airborne' state and only dodge (if not used already), should only be the last avalible movment option left."
+script = ExtResource("5_pisfr")
+to = NodePath("../../Air")
+event = &"to_air"
+
+[node name="coyote" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("4_xnpt8")
+
+[node name="Jump" type="Node" parent="StateChart/Movement/Airborn/coyote"]
+editor_description = "Activates last seccond jump before falling too far"
+script = ExtResource("5_pisfr")
+to = NodePath("../../Jump")
+event = &"to_jump"
+
+[node name="No Jump" type="Node" parent="StateChart/Movement/Airborn/coyote"]
+editor_description = "Transition to 'Air' if no jump was made"
+script = ExtResource("5_pisfr")
+to = NodePath("../../Double Jump")
+delay_seconds = 0.1
+
+[node name="Dodge" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("4_xnpt8")
+
+[node name="On Air" type="Node" parent="StateChart/Movement/Airborn/Dodge"]
+editor_description = "If you don't touch the ground send to freefall"
+script = ExtResource("5_pisfr")
+to = NodePath("../../Air")
+event = &"to_air"
+
+[node name="On Ground" type="Node" parent="StateChart/Movement/Airborn/Dodge"]
+editor_description = "Send to ground if dashing into the floor"
+script = ExtResource("5_pisfr")
+to = NodePath("../../../Grounded")
+event = &"to_ground"
+
+[node name="On Grounded Jump" type="Node" parent="StateChart/Movement/Airborn/Dodge"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../Jump")
+event = &"to_jump"
+
+[node name="On SnapBack" type="Node" parent="StateChart/Movement/Airborn/Dodge"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../../Snapback Movement/Snapback")
+event = &"to_snapback"
+
+[node name="On Dodge" type="Node" parent="StateChart/Movement/Airborn"]
+editor_description = "Dodge Goes BRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+script = ExtResource("5_pisfr")
+to = NodePath("../Dodge")
+event = &"to_dodge"
+
+[node name="Snapback Movement" type="Node" parent="StateChart/Movement"]
+script = ExtResource("3_60tbv")
+initial_state = NodePath("Snapback")
+
+[node name="Snapback" type="Node" parent="StateChart/Movement/Snapback Movement"]
+editor_description = "To activte: Do an angled dodge at the floor  'flip' your X input before landing to send yourself going backwards:
+
+Tips: A jump Done early after activation will high jump as a late one will try and retain speed on the X axis  "
+script = ExtResource("4_xnpt8")
+
+[node name="On HighToss" type="Node" parent="StateChart/Movement/Snapback Movement/Snapback"]
+editor_description = "Backflip when jump is just pressed and is_on_floor()"
+script = ExtResource("5_pisfr")
+to = NodePath("../../BackFlip")
+event = &"to_backflip"
+guard = ExtResource("7_mt1am")
+
+[node name="On BackFlip" type="Node" parent="StateChart/Movement/Snapback Movement/Snapback"]
+editor_description = "Backflip when jump is just pressed and is_on_floor()"
+script = ExtResource("5_pisfr")
+to = NodePath("../../BackFlip")
+event = &"to_backflip"
+guard = ExtResource("7_mt1am")
+
+[node name="No Action" type="Node" parent="StateChart/Movement/Snapback Movement/Snapback"]
+script = ExtResource("5_pisfr")
+to = NodePath("../../../Grounded")
+delay_seconds = 0.2
+
+[node name="BackFlip" type="Node" parent="StateChart/Movement/Snapback Movement"]
+script = ExtResource("4_xnpt8")
+
+[node name="HighToss" type="Node" parent="StateChart/Movement/Snapback Movement"]
+script = ExtResource("4_xnpt8")
+
+[node name="Grounded1" type="Node" parent="StateChart/Movement"]
+script = ExtResource("3_60tbv")
+
+[node name="StateChartDebugger" parent="." instance=ExtResource("6_yis20")]
+offset_right = -1301.0
+offset_bottom = -583.0
+initial_node_to_watch = NodePath("../StateChart")
+
+[node name="Node2D" type="Node2D" parent="."]
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.32723, 0)
+pixel_size = 0.01
+text = "Text"
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.3)
+material_override = SubResource("StandardMaterial3D_b7mnd")
+radius = 0.25
+
+[connection signal="state_physics_processing" from="StateChart/Movement" to="." method="_on_movement_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Movement/Grounded" to="." method="_on_grounded_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Grounded" to="." method="_on_grounded_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn" to="." method="_on_airborn_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/Air" to="." method="_on_air_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/Jump" to="." method="_on_jump_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/Double Jump" to="." method="_on_double_jump_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/coyote" to="." method="_on_coyote_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Movement/Airborn/Dodge" to="." method="_on_dodge_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/Dodge" to="." method="_on_dodge_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Snapback Movement" to="." method="_on_snapback_movement_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Snapback Movement/Snapback" to="." method="_on_snap_back_state_physics_processing"]

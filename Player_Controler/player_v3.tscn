@@ -1,0 +1,151 @@
+[gd_scene load_steps=10 format=3 uid="uid://b5xat4qrkayke"]
+
+[ext_resource type="Script" path="res://Player_Controler/player_v3.gd" id="1_a45nd"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="2_ow60v"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="3_080x1"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="4_c8in8"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="5_4pdw5"]
+[ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="7_4aahe"]
+[ext_resource type="Texture2D" uid="uid://cds6s8hdyam4q" path="res://icon.svg" id="8_1sbuw"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_nee2e"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b7mnd"]
+albedo_texture = ExtResource("8_1sbuw")
+
+[node name="Player" type="CharacterBody3D"]
+axis_lock_linear_z = true
+slide_on_ceiling = false
+floor_constant_speed = true
+script = ExtResource("1_a45nd")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_nee2e")
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="."]
+
+[node name="StateChart" type="Node" parent="."]
+script = ExtResource("2_ow60v")
+
+[node name="Movement" type="Node" parent="StateChart"]
+script = ExtResource("3_080x1")
+initial_state = NodePath("Grounded")
+
+[node name="Grounded" type="Node" parent="StateChart/Movement"]
+script = ExtResource("3_080x1")
+initial_state = NodePath("Walking")
+
+[node name="Walking" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("4_c8in8")
+
+[node name="Running" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("4_c8in8")
+
+[node name="On Slide" type="Node" parent="StateChart/Movement/Grounded/Running"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Slide")
+event = &"to_slide"
+
+[node name="Dash" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("4_c8in8")
+
+[node name="On Hold" type="Node" parent="StateChart/Movement/Grounded/Dash"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Running")
+event = &"to_run"
+
+[node name="On Release" type="Node" parent="StateChart/Movement/Grounded/Dash"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Slide")
+event = &"to_slide"
+
+[node name="On Slide" type="Node" parent="StateChart/Movement/Grounded/Dash"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Slide")
+event = &"to_slide"
+
+[node name="Slide" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("4_c8in8")
+
+[node name="Slide Completed" type="Node" parent="StateChart/Movement/Grounded/Slide"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Walking")
+event = &"to_walk"
+
+[node name="On Dash" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../Dash")
+event = &"to_dash"
+
+[node name="On Run" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../Running")
+event = &"to_run"
+
+[node name="On Jump" type="Node" parent="StateChart/Movement/Grounded"]
+editor_description = "Let all grounded states access to jump"
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Airborn/Jump")
+event = &"to_jump"
+
+[node name="On Air" type="Node" parent="StateChart/Movement/Grounded"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Airborn")
+event = &"to_airborne"
+
+[node name="Airborn" type="Node" parent="StateChart/Movement"]
+script = ExtResource("3_080x1")
+initial_state = NodePath("Air")
+
+[node name="Air" type="Node" parent="StateChart/Movement/Airborn"]
+editor_description = "Treated as the final step of Airborne. The only thing should be able to activate is Dodge."
+script = ExtResource("4_c8in8")
+
+[node name="Jump" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("4_c8in8")
+
+[node name="On Air" type="Node" parent="StateChart/Movement/Airborn/Jump"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Air")
+event = &"to_air"
+
+[node name="On Walk" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Grounded/Walking")
+event = &"to_walk"
+
+[node name="On Run" type="Node" parent="StateChart/Movement/Airborn"]
+script = ExtResource("5_4pdw5")
+to = NodePath("../../Grounded/Running")
+event = &"to_run"
+
+[node name="StateChartDebugger" parent="." instance=ExtResource("7_4aahe")]
+offset_left = 5.0
+offset_top = 4.0
+offset_right = -1394.0
+offset_bottom = -411.0
+initial_node_to_watch = NodePath("../StateChart")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.32723, 0)
+pixel_size = 0.01
+text = "Text"
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.3)
+material_override = SubResource("StandardMaterial3D_b7mnd")
+radius = 0.25
+
+[connection signal="state_physics_processing" from="StateChart/Movement" to="." method="_on_movement_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Grounded" to="." method="_on_grounded_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Movement/Grounded/Walking" to="." method="_on_walking_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Grounded/Walking" to="." method="_on_walking_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Movement/Grounded/Running" to="." method="_on_running_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Grounded/Running" to="." method="_on_running_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Movement/Grounded/Dash" to="." method="_on_dash_state_entered"]
+[connection signal="state_exited" from="StateChart/Movement/Grounded/Dash" to="." method="_on_dash_state_exited"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Grounded/Dash" to="." method="_on_dash_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Grounded/Slide" to="." method="_on_slide_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn" to="." method="_on_airborn_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/Air" to="." method="_on_air_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Movement/Airborn/Jump" to="." method="_on_jump_state_physics_processing"]

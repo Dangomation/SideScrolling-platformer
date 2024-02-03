@@ -1,0 +1,73 @@
+[gd_scene load_steps=6 format=3 uid="uid://dyitv5le7n0nn"]
+
+[ext_resource type="PackedScene" uid="uid://dm8bx8pdblfi0" path="res://Player_Controler/player_v4.tscn" id="1_io1jf"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_caqpi"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_mypsc"]
+sky_material = SubResource("ProceduralSkyMaterial_caqpi")
+
+[sub_resource type="Environment" id="Environment_5g0s6"]
+background_mode = 2
+sky = SubResource("Sky_mypsc")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_tml1d"]
+size = Vector3(1, 0.25, 1)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_5g0s6")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.14509, 0)
+use_collision = true
+size = Vector3(50, 1, 1)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.4419, -4.17385, 0)
+use_collision = true
+size = Vector3(150.854, 1, 1)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -61.3911, -2.62258, 0)
+use_collision = true
+size = Vector3(99.5977, 1, 1)
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 131.709, 2.93449, 0)
+use_collision = true
+size = Vector3(231.096, 1, 1)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.66734, -5)
+use_collision = true
+size = Vector3(5, 1, 1)
+
+[node name="CSGBox3D5" type="CSGMesh3D" parent="."]
+transform = Transform3D(4.88036, 0, 0, 0, 1, 0, 0, 0, 1, 11.2, 3.2937, 0)
+calculate_tangents = false
+use_collision = true
+mesh = SubResource("BoxMesh_tml1d")
+
+[node name="CSGBox3D6" type="CSGMesh3D" parent="."]
+transform = Transform3D(4.88036, 0, 0, 0, 1, 0, 0, 0, 1, -0.31832, 3.2937, 0)
+calculate_tangents = false
+use_collision = true
+mesh = SubResource("BoxMesh_tml1d")
+
+[node name="CSGBox3D7" type="CSGMesh3D" parent="."]
+transform = Transform3D(4.88036, 0, 0, 0, 1, 0, 0, 0, 1, 5.47337, 6.76532, 0)
+calculate_tangents = false
+use_collision = true
+mesh = SubResource("BoxMesh_tml1d")
+
+[node name="PlayerV4" parent="." instance=ExtResource("1_io1jf")]
